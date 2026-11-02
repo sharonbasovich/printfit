@@ -10,7 +10,7 @@ Five of six nominal relationships are represented.
 
 3
 00:00:29,000 --> 00:00:40,500
-This B–C test uses 25 mm. The intended spacing is 30 mm.
+This B–C test uses 25 mm. Intended: 50 − 20 = 30 mm.
 A different valid test does not erase this discrepancy.
 
 4
