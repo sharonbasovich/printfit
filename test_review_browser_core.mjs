@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {compare,missingPlans} from './dist/core.mjs';
+const assembly=Object.fromEntries(['A','B + C','A + B','C'].map((id,i)=>[id,{x:i*10,slot_width:2}]));
+const report=compare(assembly,{}), plans=missingPlans(assembly,report);
+assert.equal(Object.keys(plans).length,6,'Human-readable pair names must not overwrite distinct pair plans');
+assert.equal(compare(assembly,plans).represented,6,'All six requested nominal relationships must be preserved');
+assert.throws(()=>compare(Object.fromEntries(Array.from({length:101},(_,i)=>[`item${i}`,{x:i,slot_width:2}])),{}));
+assert.throws(()=>compare({A:{x:1000001,slot_width:2}},{}));
+assert.throws(()=>compare({A:{x:0,slot_width:2}},Object.fromEntries(Array.from({length:201},(_,i)=>[`coupon${i}`,{A:{x:0,slot_width:2}}]))));
+console.log('Independent browser-core repair uniqueness and limit checks passed.');
+assert.throws(()=>compare({'A,B':{x:0,slot_width:2}},{}));
+assert.throws(()=>compare({['A'.repeat(31)]:{x:0,slot_width:2}},{}));

@@ -1,0 +1,32 @@
+name: Capture real PrintFit workflow
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24.22.1
+      - run: node test_browser_core.mjs && node test_review_browser_core.mjs && node test_review_release.mjs
+      - run: npm install --prefix capture && npx --prefix capture playwright install --with-deps chromium
+      - run: |
+          python3 -m http.server 4173 --directory dist > /tmp/printfit-server.log 2>&1 &
+          for i in $(seq 1 20); do curl --fail --silent http://127.0.0.1:4173/ > /dev/null && break; sleep 1; done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          node capture/record.mjs
+      - if: always()
+        run: |
+          mkdir -p capture-output
+          cp capture/package-lock.json capture-output/capture-package-lock.json 2>/dev/null || true
+          cp /tmp/printfit-server.log capture-output/server.log 2>/dev/null || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: printfit-real-workflow
+          retention-days: 3
+          path: capture-output/
+          if-no-files-found: warn

@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {compare,missingPlans,readProject} from './dist/core.mjs';
+const p=JSON.parse(fs.readFileSync('dist/example.json'));
+let r=compare(p.assembly,p.coupons);assert.equal(r.represented,5);assert.equal(r.total,6);assert.deepEqual(r.relations.find(x=>x.status==='unrepresented').pair,['A','D']);assert.equal(r.relations.flatMap(x=>x.mismatched).length,2);
+const repaired={...p,coupons:{...p.coupons,...missingPlans(p.assembly,r)}};assert.equal(compare(repaired.assembly,repaired.coupons).represented,6);
+assert.deepEqual(readProject(JSON.parse(JSON.stringify(repaired))),repaired);
+assert.throws(()=>readProject({...p,units:'inch'}));
+assert.throws(()=>compare({A:{x:-1e308,slot_width:1},B:{x:1e308,slot_width:1}},{}));
+assert.throws(()=>compare(p.assembly,{bad:{Z:{x:0,slot_width:1}}}));
+assert.throws(()=>compare({A:{x:true,slot_width:1}},{}));
+console.log('8 browser-core assertions passed; oracle, repairs, roundtrip, units, overflow, IDs, booleans.');
