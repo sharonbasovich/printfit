@@ -41,7 +41,7 @@ await page.locator('#coupon').selectOption('AB_shifted');
 assert.ok(await page.locator('#inspection').isHidden());
 await sel.selectOption('missing');
 assert.equal(await page.locator('#relations tr').count(),1);
-await page.getByRole('button',{name:'Add missing pair plans',exact:true}).click();
+await page.locator('#repair').click();
 assert.equal(await page.locator('#score').textContent(),'6 / 6');
 assert.ok(await page.locator('#empty-results').isVisible());
 console.log('PASS selector clears stale context and missing plans keep correct global totals');
