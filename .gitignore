@@ -1,0 +1,5 @@
+.openai/
+review-output/
+node_modules/
+capture/node_modules/
+*.bundle
