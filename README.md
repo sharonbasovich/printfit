@@ -30,3 +30,9 @@ The inspection panel compares nominal relative spacing and both slot widths. It 
 Select a test piece and choose **Remove selected test**. Confirmation explains that its evidence will no longer count: removing a sole representative can reduce coverage. **Undo last removal** restores the exact previous project, test order and inspection context until the next successful project change. Repeated removals retain only the most recent undo. Export the project to keep changes; this is not autosave or a physical-fit certification.
 
 Browser regression additionally covers cancellation/focus, sole-representative removal, redundant mismatch retirement, exact Undo, edit invalidation, empty test sets, repeated removal and narrow keyboard interaction.
+
+## Bounded pair planning
+
+The pair-plan action previews how many missing relationships it can add within the existing 200-test and 50,000 pair–test comparison limits. Large valid projects receive a fitting batch rather than failing the entire action. Remaining coverage stays visibly missing; existing tests and mismatches are preserved. When capacity is exhausted, inspect existing tests or work with a smaller project. Generated pairs are centered around their midpoint so supported extreme coordinates stay valid. These are nominal plans, not printed or measured tests.
+
+Run `node test_repair_capacity.mjs` for eight additional scenario groups covering capacity, partial/repeated/no-op actions, immutable inputs, names, existing mismatches and extreme/reversed coordinates. `capture/test-plan-capacity.mjs` tests actual browser controls using synthetic bootstrap fixtures, not native file upload.

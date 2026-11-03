@@ -11,12 +11,13 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 24.22.1
-      - run: node test_browser_core.mjs && node test_review_browser_core.mjs && node test_review_release.mjs && node test_review_navigation.mjs
+      - run: node test_browser_core.mjs && node test_review_browser_core.mjs && node test_review_release.mjs && node test_review_navigation.mjs && node test_repair_capacity.mjs
       - run: npm install --prefix capture && npx --prefix capture playwright install --with-deps chromium
       - run: |
           python3 -m http.server 4173 --directory dist > /tmp/printfit-server.log 2>&1 &
           for i in $(seq 1 20); do curl --fail --silent http://127.0.0.1:4173/ > /dev/null && break; sleep 1; done
           node capture/test-review.mjs
+          node capture/test-plan-capacity.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
