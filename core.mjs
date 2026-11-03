@@ -28,16 +28,48 @@ export function compare(assembly,coupons) {
   }
   return {relations,represented:relations.filter(r=>r.represented_by.length).length,total:relations.length};
 }
+function pairPlan(assembly,pair) {
+  // Centering, rather than shifting the leftmost slot to zero, preserves the
+  // supported coordinate range even when a pair spans both extreme endpoints.
+  const midpoint=(assembly[pair[0]].x+assembly[pair[1]].x)/2;
+  return Object.fromEntries(pair.map(id=>[id,{x:assembly[id].x-midpoint,slot_width:assembly[id].slot_width}]));
+}
+function planName(pair,existing) {
+  const full=`Repair ${pair.join(' + ')}`;
+  const base=full.length>50?full.slice(0,49)+'…':full;
+  let key=base,n=2;
+  while(Object.hasOwn(existing,key)) {
+    const suffix=` (${n++})`;
+    key=base.slice(0,60-suffix.length)+suffix;
+  }
+  return key;
+}
 export function missingPlans(assembly,report) {
   const plans={};
   for(const row of report.relations.filter(r=>r.status==='unrepresented')) {
-    const start=Math.min(...row.pair.map(id=>assembly[id].x));
-    const full=`Repair ${row.pair.join(' + ')}`;const base=full.length>50?full.slice(0,49)+'…':full; let key=base,n=2;while(Object.hasOwn(plans,key))key=`${base} (${n++})`;
-    plans[key]=Object.fromEntries(row.pair.map(id=>[id,{x:assembly[id].x-start,slot_width:assembly[id].slot_width}]));
+    plans[planName(row.pair,plans)]=pairPlan(assembly,row.pair);
   }
   return plans;
+}
+export function addMissingPlans(assembly,coupons) {
+  const report=compare(assembly,coupons);
+  const missing=report.relations.filter(row=>row.status==='unrepresented');
+  const comparisonLimit=report.total?Math.floor(50000/report.total):Infinity;
+  const maxTests=Math.min(200,comparisonLimit);
+  const capacity=Math.max(0,maxTests-Object.keys(coupons).length);
+  const next=structuredClone(coupons),plans={};
+  for(const row of missing.slice(0,capacity)) {
+    const name=planName(row.pair,next),plan=pairPlan(assembly,row.pair);
+    plans[name]=plan;next[name]=plan;
+  }
+  // Keep the operation atomic if a future validation rule is added.
+  compare(assembly,next);
+  const added=Object.keys(plans).length;
+  return {coupons:next,plans,added,remaining:missing.length-added,capacity,
+    limitingReason:missing.length>capacity?(comparisonLimit<200?'comparison_limit':'test_limit'):null};
 }
 export function readProject(value) {
   if(value.schema!==1 || value.units!=='mm') throw Error('Expected PrintFit schema 1, units mm.');
   compare(value.assembly,value.coupons); return structuredClone(value);
 }
+
