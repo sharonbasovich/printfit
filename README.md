@@ -25,3 +25,8 @@ The demo is intentionally silent and uses synthetic data. Sampled-frame visual r
 The three original Node suites and 15 additional diagnostic assertions passed. Independent code review checked 29 varied-size and special-label cases without mutating project data. GitHub Chromium checks cover seven scenario groups: filtered correction and safe return, keyboard/empty filter, selector/missing-plan state, special labels, invalid-edit retention, 390px layout, and cancelled/accepted reset. Actual desktop browser interaction and pixels were independently reviewed. Native import, physical device and screen-reader testing remain unverified.
 
 The inspection panel compares nominal relative spacing and both slot widths. It does not automatically alter any dimension, and a corrected comparison is not a physical-fit result.
+
+### Retire obsolete tests
+Select a test piece and choose **Remove selected test**. Confirmation explains that its evidence will no longer count: removing a sole representative can reduce coverage. **Undo last removal** restores the exact previous project, test order and inspection context until the next successful project change. Repeated removals retain only the most recent undo. Export the project to keep changes; this is not autosave or a physical-fit certification.
+
+Browser regression additionally covers cancellation/focus, sole-representative removal, redundant mismatch retirement, exact Undo, edit invalidation, empty test sets, repeated removal and narrow keyboard interaction.
