@@ -9,7 +9,7 @@ No runtime dependencies, AI API, analytics, account integration or server-side p
 ## Review scope
 Desktop and narrow 406 CSS px layout, custom item/test creation, native edits, keyboard continuity, invalid-input retention, repair and export were reviewed. Rendering is paginated to 50 relationships and 3 evidence entries per cell; imports are bounded by 1 MB, 100 items per layout, 200 test pieces and 50,000 pair-test comparisons. Numeric coordinates are bounded to ±1,000,000 mm; slot widths positive through 1,000,000 mm.
 
-JSON parser/roundtrip is tested. **Browser file import acceptance remains unverified** due the automation environment's native upload authorization boundary. The import feature is a review-build feature, not a validated delivery claim. No automated import permission is implied by this source. Export requests retain the unsaved-change guard until reset/close; confirm your file was saved.
+JSON parser/roundtrip is tested. **Native file-chooser acceptance remains unverified.** Synthetic harness tests do not establish native chooser behavior. The import feature remains a review-build feature. Export requests retain the unsaved-change guard until reset/close; confirm your file was saved.
 
 AI assistance was used to develop and review code. No existing pre-event project code/assets were reused. PrintFit was submitted to the GenHacks Open track on November 2, 2026. Submission is not an award or a claim of comprehensive quality acceptance.
 

@@ -1,6 +1,6 @@
 # Ordered import review — November 5, 2026
 
-Base source: dca6f6be0bc7c457062a7bdd4c69a487514bfbe2. Remote main was rechecked before editing; no open PR was present. GenHacks rules were rechecked: submissions run November 1, 2026 at midnight Eastern through December 26 at midnight Eastern. The submitted project entry, film and existing release history were not edited.
+Base source: dca6f6be0bc7c457062a7bdd4c69a487514bfbe2. GenHacks rules were rechecked: submissions run November 1, 2026 at midnight Eastern through December 26 at midnight Eastern. The submitted project entry, film and existing release history were not edited.
 
 ## Reproduction and implementation
 
