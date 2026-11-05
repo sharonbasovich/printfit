@@ -18,8 +18,8 @@ Ordinary edits, remove/Undo, planning and creation keep their prior behavior. Ca
 - Read-only independent code review found no blocking source defects and separately ran all Node suites.
 - The 320px rendered review exposed existing grid overflow. Mobile editor columns now fit their container; fixed table layout applies only to dimension editors. Inspection and findings retain their scroll containers.
 
-## Limits and pending action
+## Verification limits
 
-The browser harness uses synthetic File objects and controlled reads. It is not native file-chooser verification. The previously attempted chooser.setFiles of dist/example.json into http://127.0.0.1:4195/ remains unresolved at its approval/delivery boundary and was not repeated or bypassed. On resumption, the preserved tab still showed the initial example message, not a confirmed import. No inference of approval or completed native import is made.
+The browser harness uses synthetic File objects and controlled reads. Native file-chooser acceptance remains unverified. These tests do not establish native chooser behavior.
 
 Physical devices, screen readers and physical fit remain unverified. Browser evidence is synthetic. Export tests inspect downloaded JSON from the automated test browser; they do not establish that the owner saved a native-browser download.
