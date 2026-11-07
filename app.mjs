@@ -2,6 +2,9 @@ import {compare,addMissingPlans,readProject} from './core.mjs';
 import {filterRelations,inspectionDetails} from './review.mjs';
 let example=await(await fetch('./example.json')).json(), project=structuredClone(example), selected=Object.keys(project.coupons)[0], dirty=false,page=0,filter='all',inspection=null, removal=null;
 const $=id=>document.getElementById(id), escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// A nonempty selection supersedes every older read, even if it later fails
+// validation or replacement is declined. Only the owning request may clean up.
+let importGeneration=0;
 function message(text){$('message').textContent=text;}
 function plot(layout){const values=Object.values(layout), low=Math.min(...values.map(i=>i.x-i.slot_width/2)),high=Math.max(...values.map(i=>i.x+i.slot_width/2)),other=Object.values(project.assembly),current=Object.values(project.coupons[selected]||project.assembly),extent=v=>Math.max(...v.map(i=>i.x+i.slot_width/2))-Math.min(...v.map(i=>i.x-i.slot_width/2)),span=Math.max(1,extent(other),extent(current)),pos=x=>24+(x-low)/span*432;return `<svg class="diagram" viewBox="0 0 480 116" role="img" aria-label="Nominal slot arrangement on shared scale; each origin normalized"><line x1="24" y1="70" x2="456" y2="70" stroke="#829779"/>${Object.entries(layout).map(([id,i])=>`<rect x="${pos(i.x-i.slot_width/2)}" y="46" width="${Math.max(2,i.slot_width/span*432)}" height="45" rx="2" fill="#38634c"/><text x="${pos(i.x)}" y="31" text-anchor="middle" font-size="14" fill="#21342c">${escape(id)}</text><text x="${pos(i.x)}" y="108" text-anchor="middle" font-size="11" fill="#526157">${i.x} mm</text>`).join('')}</svg>`;}
 function table(layout,kind){return `<table><thead><tr><th>Item</th><th>Center (mm)</th><th>Slot width (mm)</th></tr></thead><tbody>${Object.entries(layout).map(([id,i])=>`<tr><td>${escape(id)}</td>${['x','slot_width'].map(key=>`<td><input type="number" step="any" data-kind="${kind}" data-id="${escape(id)}" data-key="${key}" aria-label="${escape(kind==='assembly'?'Assembly':selected)} ${escape(id)} ${key==='x'?'center':'slot width'}" value="${i[key]}"></td>`).join('')}</tr>`).join('')}</tbody></table>`;}
@@ -52,9 +55,23 @@ $('undo-removal').onclick=()=>{
   ({project,selected,inspection,page,filter}=removal);removal=null;dirty=true;$('relation-filter').value=filter;
   render();message('Removed test restored with its original dimensions and order. Export to keep your changes.');$('remove-test').focus();
 };
-$('reset').onclick=()=>{if(dirty&&!confirm('Discard unexported changes and reload the synthetic example?'))return;removal=null;project=structuredClone(example);selected=Object.keys(project.coupons)[0];dirty=false;inspection=null;page=0;render();message('Synthetic example restored.');};
+$('reset').onclick=()=>{if(dirty&&!confirm('Discard unexported changes and reload the synthetic example?'))return;importGeneration++;$('import').value='';removal=null;project=structuredClone(example);selected=Object.keys(project.coupons)[0];dirty=false;inspection=null;page=0;render();message('Synthetic example restored.');};
 $('export').onclick=()=>{const data={...project,scope:'Nominal pairwise center/slot-width correspondence only; not physical fit'};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='printfit-project.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Download requested. Keep this page open until you confirm the file was saved; the unsaved-change guard remains active.');};
-$('import').onchange=async()=>{const file=$('import').files[0];if(!file)return;try{if(file.size>1000000)throw Error('Use a project smaller than 1 MB.');const next=readProject(JSON.parse(await file.text()));if(dirty&&!confirm('Replace your unexported changes with this file?'))return;removal=null;project=next;selected=Object.keys(project.coupons)[0];dirty=false;inspection=null;page=0;render();message('Project imported and validated. Nominal geometry restored; physical fit remains unverified.');}catch(e){message(`Import not applied: ${e.message}`);}finally{$('import').value='';}};
+$('import').onchange=async()=>{
+  const input=$('import'),file=input.files[0];
+  if(!file)return;
+  const request=++importGeneration;
+  try{
+    if(file.size>1000000)throw Error('Use a project smaller than 1 MB.');
+    const text=await file.text();
+    if(request!==importGeneration)return;
+    const next=readProject(JSON.parse(text));
+    if(dirty&&!confirm('Replace your unexported changes with this file?'))return;
+    removal=null;project=next;selected=Object.keys(project.coupons)[0];dirty=false;inspection=null;page=0;render();
+    message('Project imported and validated. Nominal geometry restored; physical fit remains unverified.');
+  }catch(e){if(request===importGeneration)message(`Import not applied: ${e.message}`);}
+  finally{if(request===importGeneration)input.value='';}
+};
 
 $('add-item').onsubmit=e=>{e.preventDefault();try{const id=$('new-id').value.trim(),x=Number($('new-center').value),slot_width=Number($('new-width').value);if(!id||Object.hasOwn(project.assembly,id))throw Error('Choose a new nonempty item ID.');const copy=structuredClone(project);copy.assembly={...copy.assembly,[id]:{x,slot_width}};compare(copy.assembly,copy.coupons);project=copy;removal=null;dirty=true;render();$('add-item').reset();message(`Item ${id} added. Its relationships need test plans.`);}catch(e){message(e.message);}};
 $('add-coupon').onsubmit=e=>{e.preventDefault();try{const name=$('new-coupon').value.trim(),ids=$('coupon-ids').value.split(',').map(x=>x.trim());if(!name||Object.hasOwn(project.coupons,name))throw Error('Choose a new test-piece name.');if(new Set(ids).size!==ids.length||ids.some(id=>!Object.hasOwn(project.assembly,id)))throw Error('Use each known item ID once, separated by commas.');const copy=structuredClone(project);copy.coupons={...copy.coupons,[name]:Object.fromEntries(ids.map(id=>[id,structuredClone(project.assembly[id])]))};compare(copy.assembly,copy.coupons);project=copy;removal=null;selected=name;dirty=true;render();$('add-coupon').reset();message('Test piece created at intended dimensions. Edit it to match your actual design; no physical test has occurred.');}catch(e){message(e.message);}};
