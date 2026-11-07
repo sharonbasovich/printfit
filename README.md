@@ -9,7 +9,7 @@ No runtime dependencies, AI API, analytics, account integration or server-side p
 ## Review scope
 Desktop and narrow 406 CSS px layout, custom item/test creation, native edits, keyboard continuity, invalid-input retention, repair and export were reviewed. Rendering is paginated to 50 relationships and 3 evidence entries per cell; imports are bounded by 1 MB, 100 items per layout, 200 test pieces and 50,000 pair-test comparisons. Numeric coordinates are bounded to ±1,000,000 mm; slot widths positive through 1,000,000 mm.
 
-JSON parser/roundtrip is tested. **Browser file import acceptance remains unverified** due the automation environment's native upload authorization boundary. The import feature is a review-build feature, not a validated delivery claim. No automated import permission is implied by this source. Export requests retain the unsaved-change guard until reset/close; confirm your file was saved.
+JSON parser/roundtrip is tested. **Native file-chooser acceptance remains unverified.** Synthetic harness tests do not establish native chooser behavior. The import feature remains a review-build feature. Export requests retain the unsaved-change guard until reset/close; confirm your file was saved.
 
 AI assistance was used to develop and review code. No existing pre-event project code/assets were reused. PrintFit was submitted to the GenHacks Open track on November 2, 2026. Submission is not an award or a claim of comprehensive quality acceptance.
 
@@ -36,3 +36,9 @@ Browser regression additionally covers cancellation/focus, sole-representative r
 The pair-plan action previews how many missing relationships it can add within the existing 200-test and 50,000 pair–test comparison limits. Large valid projects receive a fitting batch rather than failing the entire action. Remaining coverage stays visibly missing; existing tests and mismatches are preserved. When capacity is exhausted, inspect existing tests or work with a smaller project. Generated pairs are centered around their midpoint so supported extreme coordinates stay valid. These are nominal plans, not printed or measured tests.
 
 Run `node test_repair_capacity.mjs` for eight additional scenario groups covering capacity, partial/repeated/no-op actions, immutable inputs, names, existing mismatches and extreme/reversed coordinates. `capture/test-plan-capacity.mjs` tests actual browser controls using synthetic bootstrap fixtures, not native file upload.
+
+## Ordered project imports
+
+The most recently selected nonempty file owns import completion, validation errors and input cleanup. Selecting an invalid file or declining its replacement confirmation still supersedes older reads. Accepting **Load synthetic example** also supersedes pending imports. Cancelling a chooser, making an empty selection or declining Reset leaves the pending read eligible. Edits, test retirement/Undo and pair planning made during a read retain the existing unexported-change confirmation when that read completes.
+
+Run `node test_import_races.mjs` for 11 deterministic scenario groups against the actual app module. `capture/test-import-races.mjs` runs delayed synthetic File reads in rendered Chromium at 1280, 390 and 320 CSS pixels with reduced motion, keyboard inspection and downloaded JSON checks. Native file-chooser acceptance remains unverified; these harnesses do **not** establish native chooser behavior. The 320px review also corrected editor grid overflow without changing the desktop layout, content or geometry scope.
